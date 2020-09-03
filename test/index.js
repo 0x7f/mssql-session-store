@@ -2,6 +2,7 @@ var _ = require('underscore');
 var assert = require('assert');
 var async = require('async');
 var fs = require('fs');
+var path = require('path');
 var session = require('express-session');
 var sql = require('mssql');
 var superagent = require('superagent');
@@ -9,11 +10,11 @@ var superagent = require('superagent');
 var MssqlStore = require('../lib/')(session);
 
 describe('MssqlStore', function() {
-  var mssqlConfig = JSON.parse(fs.readFileSync('test/mssqlConfig.json'));
+  var mssqlConfig = JSON.parse(fs.readFileSync(path.join(__dirname, 'mssqlConfig.json')));
   var connection = null;
 
   before(function(done) {
-    connection = new sql.Connection(mssqlConfig, function(err) {
+    connection = sql.connect(mssqlConfig, function(err) {
       assert.ifError(err);
       done();
     });
@@ -30,7 +31,7 @@ describe('MssqlStore', function() {
   function options(additionalOptions) {
     return _.defaults({ connection: connection }, additionalOptions);
   };
-  
+
   describe('constructor', function() {
     it('validates connection option is an mssql.Connection', function() {
       var options = { connection: 'invalid connection' };
@@ -187,7 +188,7 @@ describe('MssqlStore', function() {
   });
 
   describe('example site', function() {
-    it('increments the visit count', function(done) {      
+    it('increments the visit count', function(done) {
       var example = require('../example/');
       example.start(mssqlConfig, function(err) {
         assert.ifError(err);
